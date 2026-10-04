@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GirlPhoto · 调色标注台</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><div class="brand"><span class="brand-icon">g.</span><div><strong>GirlPhoto</strong><span class="subtitle">调色标注台 / 本地最小版</span></div></div><div class="header-actions"><span class="local-badge">● 仅本机存储</span><label>标注者 <input id="reviewer" value="我" maxlength="60" aria-label="标注者"></label><button id="switchReviewer">切换</button><a class="button" href="/api/export" download>导出标注</a></div></header>
+<main>
+<section class="intro"><div><p class="eyebrow">PHOTO ANNOTATION WORKSPACE</p><h1>把审美判断，变成可用的数据。</h1><p>先标风格与质量，再比较同一原图的不同调色版本。无需硬打百分制。</p></div><div id="stats" class="stats"></div></section>
+<nav aria-label="工作模式"><button class="tab active" data-tab="single" aria-pressed="true">01 单图标注</button><button class="tab" data-tab="compare" aria-pressed="false">02 版本比较</button><button class="tab" data-tab="library" aria-pressed="false">03 照片与分组</button><button class="tab" data-tab="guide" aria-pressed="false">使用说明</button><button id="undo" class="undo">撤销上次标注</button></nav>
+<div id="status" role="status" aria-live="polite"></div>
+<section id="single" class="panel">
+  <div class="toolbar"><label>队列 <select id="queue"><option value="pending">未标注</option><option value="all">全部照片</option><option value="labeled">已标注</option><option value="skipped">已跳过</option></select></label><span id="queueInfo"></span><div class="push"></div><button id="previous">上一张</button><button id="next">下一张</button></div>
+  <div id="singleEmpty" class="empty"><div class="empty-mark">＋</div><h2>从第一组照片开始</h2><p>导入你的原图与调色版本，或载入合成演示图体验流程。</p><button class="primary" id="emptyImport">导入照片</button><button id="demo">载入演示图</button><p class="hint">演示图仅用于测试操作，不属于真实训练数据。</p></div>
+  <div id="singleWork" class="workspace" hidden>
+    <div class="photo-area"><div class="viewer"><img id="mainPhoto" alt="当前待标注照片"><span id="demoBadge" class="image-badge" hidden>合成演示 · 不用于训练</span></div><div class="photo-caption"><span id="photoInfo"></span><button id="openPhoto">放大查看</button></div><p id="colorNote" class="hint"></p></div>
+    <form id="labelForm" class="annotation">
+      <div class="section-heading"><span class="step">1</span><h2>风格判断</h2><span class="hint">可以同时符合多类</span></div>
+      <div id="styleFields"></div>
+      <div class="section-heading"><span class="step">2</span><h2>调色质量</h2><span class="hint">快捷键 1 / 2 / 3</span></div>
+      <div class="quality-options"><label><input type="radio" name="quality" value="1"><span><b>1 · 明显不合格</b><small>明显处理问题，需要较大修改</small></span></label><label><input type="radio" name="quality" value="2"><span><b>2 · 基本可用</b><small>无严重问题，但有改进空间</small></span></label><label><input type="radio" name="quality" value="3"><span><b>3 · 效果较好</b><small>协调自然，基本无需明显修改</small></span></label><label class="neutral"><input type="radio" name="quality" value="" checked><span>暂不评分</span></label></div>
+      <details><summary>问题标签与备注 <span class="hint">可选</span></summary><div id="defectFields" class="defects"></div><textarea id="note" placeholder="只记录有帮助的判断，不必每张填写。" maxlength="1000" aria-label="标注备注"></textarea></details>
+      <div class="save-bar"><button type="button" id="skip">跳过此图</button><button type="submit" id="save" class="primary">保存并下一张 <span>Enter</span></button></div><p class="hint">只有点击保存才会写入。切换照片前会提醒未保存内容。</p>
+    </form>
+  </div>
+</section>
+<section id="compare" class="panel" hidden>
+  <div class="toolbar"><label>目标风格 <select id="pairStyle"></select></label><label class="inline"><input type="checkbox" id="retryPairs">重新包含跳过的比较</label><div class="push"></div><span id="pairInfo"></span><button id="refreshPair">换一组</button></div>
+  <p class="compare-question">在同样追求这个风格的前提下，哪个版本的颜色和明暗处理更合适？</p>
+  <div id="pairEmpty" class="empty"><h2>还没有可比较的版本</h2><p>将同一原图的不同版本放入同一个“原图组”，并在单图标注中确认至少两张符合目标风格。</p><button id="goLibrary">查看照片分组</button><p class="hint">左右顺序随机；文件名、参数和已有分数不显示，减少暗示。</p></div>
+  <div id="pairWork" hidden><div class="pair-grid"><figure><figcaption>左侧版本</figcaption><div class="pair-photo"><img id="leftPhoto" alt="左侧调色版本"></div></figure><figure><figcaption>右侧版本</figcaption><div class="pair-photo"><img id="rightPhoto" alt="右侧调色版本"></div></figure></div><div class="pair-actions"><button class="primary" data-vote="left">← 左边更好</button><button data-vote="tie">＝ 差不多</button><button class="primary" data-vote="right">右边更好 →</button><button data-vote="skip">无法判断 / 跳过</button></div><p class="hint center">只比较调色。同样差也可以有优劣；平局不等于无法判断。放大单图不会保存投票。</p><div class="center"><button id="zoomLeft">放大左图</button><button id="zoomRight">放大右图</button></div></div>
+</section>
+<section id="library" class="panel" hidden>
+  <div class="import-box"><div><h2>导入照片</h2><p>JPEG / PNG / WebP，单张不超过 25 MB。复制到本地数据目录，不移动原文件。</p></div><div class="import-fields"><label>本次原图组 <input id="importGroup" placeholder="可留空，按文件名或文件夹识别" maxlength="120"></label><label>拍摄批次 / 人物分组 <input id="importCohort" placeholder="同一人物或连拍填写同一个名称" maxlength="120"></label></div><div class="row"><button class="primary" id="pickFiles">选择照片</button><button id="pickFolder">选择文件夹</button><span id="importProgress" aria-live="polite"></span></div><p class="hint">同一原图的版本命名为 <code>001__原图.jpg</code>、<code>001__暖黄.jpg</code>、<code>001__冷绿.jpg</code>，自动归为 001 组。也可每个原图组放一个文件夹。导入后请检查分组。</p><input type="file" id="files" accept="image/jpeg,image/png,image/webp" multiple hidden><input type="file" id="folder" webkitdirectory multiple hidden></div>
+  <div class="toolbar"><h2>照片清单</h2><input id="librarySearch" type="search" placeholder="搜索文件名或原图组" aria-label="搜索照片"><div class="push"></div><span class="hint">同一批次共享 train / validation / test 划分</span></div><div id="photoTable"></div>
+  <details class="style-settings"><summary>增加风格类别</summary><p class="hint">建议先保留 2–3 类。新增类别不会把旧照片自动标为“不符合”。</p><div class="row"><input id="newStyleName" placeholder="风格名" maxlength="30" aria-label="新增风格名"><input id="newStyleDescription" placeholder="一句清晰的调色定义" maxlength="300" aria-label="新增风格定义"><button id="addStyle">增加风格</button></div></details>
+</section>
+<section id="guide" class="panel guide" hidden><h2>十分钟体验流程</h2><ol><li>在“照片与分组”导入同一原图的几个调色版本；还没准备照片，可以先载入演示图。</li><li>检查“原图组”。只有同组图片才会组成比较。相同人物或同次连拍建议放在同一拍摄批次。</li><li>在单图标注中分别选风格、质量。<strong>未判断、不确定、不符合是三种不同记录。</strong></li><li>至少给同一组两张照片确认相同风格，即可在版本比较中投票。</li><li>点击“导出标注”下载 CSV 和 JSON。关闭后重新启动，记录仍会保留。</li></ol><h2>标注时的共同标准</h2><p>评颜色、明暗与协调程度，不评人物长相、妆造或背景是否高级。暗调、低对比或颗粒可能是风格选择，不自动扣分。风格可以重叠，不确定就保留不确定。</p><p>同一设备、稳定亮度，关闭会改变屏幕颜色的夜间模式。左右版本顺序随机，不显示预设名与已有评分。</p><h2>数据与训练边界</h2><p>这是标注工具，尚未训练模型 1 / 模型 2，也不会自动生成真实照片的调色版本。请使用已有修图软件准备版本。本地数据库保留每位标注者的独立记录，支持最近一次单图或比较标注的撤销。</p><p>拍摄批次按名称稳定分配约 80% / 10% / 10% 到训练、验证、测试；小数据集不保证比例。划分可在清单调整，改动作用于整个批次。同一原图的版本必须同组；同一人物跨批次仍需你合并，程序不会做人脸识别。</p><p>预览统一方向，最长边 2400 像素；识别到嵌入色彩配置时尝试转换到 sRGB。原始文件完整保留。RAW、HEIC、动画与大于 4000 万像素图片暂不支持。</p><p>请同时备份整个 <code>data</code> 文件夹。导出 ZIP 只含标注与照片清单，不包含原图。照片、数据库与导出默认不进入 Git。</p><p id="dataPath"></p></section>
+</main>
+<dialog id="zoomDialog"><div class="dialog-bar"><span>放大预览 · 滚动查看</span><button id="closeZoom">关闭 Esc</button></div><img id="zoomPhoto" alt="照片放大预览"></dialog>
+<dialog id="groupDialog"><form id="groupForm"><h2>调整原图组</h2><p class="hint">只有同一原图的不同调色版本才应该同组。</p><label>原图组<input id="editGroup" required maxlength="120"></label><label>拍摄批次<input id="editCohort" required maxlength="120"></label><label>新批次划分<select id="editSplit"><option value="train">训练 train</option><option value="validation">验证 validation</option><option value="test">测试 test</option></select></label><p class="hint">加入已有组或批次会继承该批次的划分。已有比较记录的图片需先撤销比较，才能移动分组。</p><div class="row"><button type="button" id="cancelGroup">取消</button><button type="submit" class="primary">保存分组</button></div></form></dialog>
+<footer>GirlPhoto · v0.1 <span>质量评价 × 风格标签 × 同图比较</span></footer>
+<script src="/app.js"></script>
+</body></html>
