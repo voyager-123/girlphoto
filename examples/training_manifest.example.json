@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "demo_only": false,
+  "styles": ["retro", "fresh"],
+  "samples": [
+    {"id": "a", "file": "REPLACE/001__original.jpg", "role": "original", "group_id": "001", "cohort_id": "person01_session01", "split": "train", "quality": null, "styles": {}, "strengths": {}},
+    {"id": "a_warm", "file": "REPLACE/001__warm.jpg", "role": "edited", "group_id": "001", "cohort_id": "person01_session01", "split": "train", "quality": 1, "styles": {"retro": "yes", "fresh": "no"}, "strengths": {"retro": 0.7}},
+    {"id": "a_cool", "file": "REPLACE/001__cool.jpg", "role": "edited", "group_id": "001", "cohort_id": "person01_session01", "split": "train", "quality": 3, "styles": {"retro": "yes", "fresh": "unknown"}, "strengths": {}}
+  ],
+  "pairs": [
+    {"source": "a", "left": "a_warm", "right": "a_cool", "style": "retro", "outcome": "right"}
+  ],
+  "tasks": [
+    {"source": "a", "style": "retro", "strength": 0.7, "target": "a_cool"}
+  ],
+  "note": "Template only: replace image paths and labels with your observations. Add independent validation/test cohorts before meaningful evaluation. These example labels do not state that cool colors are always better."
+}

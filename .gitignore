@@ -1,4 +1,7 @@
 .venv/
+.venv-models/
+ml_runs/
+*.pt
 __pycache__/
 *.py[cod]
 data/
