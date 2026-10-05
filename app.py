@@ -406,11 +406,13 @@ class Store:
         return {"created": made}
 
 
-def make_server(store, port=8765):
+def make_server(store, port=8765, model_dir=None):
     token = secrets.token_urlsafe(32)
+    from try_service import TryService
+    tester = TryService(model_dir or ROOT / "ml_runs")
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "GirlPhoto/0.1"
+        server_version = "GirlPhoto/0.2"
 
         def log_message(self, fmt, *args):
             # Do not put original filenames, notes, or query strings in logs.
@@ -441,6 +443,10 @@ def make_server(store, port=8765):
             url = urlparse(self.path)
             query = parse_qs(url.query)
             try:
+                if url.path == "/api/try/models":
+                    result = tester.catalog()
+                    result["token"] = token
+                    return self.json(result)
                 if url.path == "/api/state":
                     result = store.state(query.get("reviewer", ["我"])[0])
                     result["token"] = token
@@ -456,7 +462,8 @@ def make_server(store, port=8765):
                     if not row:
                         return self.json({"error": "照片不存在。"}, 404)
                     return self.send_bytes((store.root / row[0]).read_bytes(), "image/jpeg")
-                static = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css"}
+                static = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css",
+                          "/try": "try.html", "/try.js": "try.js", "/try.css": "try.css"}
                 if url.path in static:
                     path = ROOT / "static" / static[url.path]
                     return self.send_bytes(path.read_bytes(), (mimetypes.guess_type(path)[0] or "text/plain") + "; charset=utf-8")
@@ -478,6 +485,8 @@ def make_server(store, port=8765):
                     raise ValueError("请求过大或为空。")
                 payload = json.loads(self.rfile.read(size))
                 path = urlparse(self.path).path
+                if path == "/api/try/predict":
+                    return self.json(tester.predict(payload))
                 if path == "/api/import":
                     raw = base64.b64decode(payload["data"], validate=True)
                     return self.json(store.import_photo(raw, payload["name"], payload.get("group_id"), payload.get("cohort_id")))
@@ -511,6 +520,7 @@ def main():
     parser.add_argument("--data-dir", default=str(ROOT / "data"))
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--open-try", action="store_true", help="打开模型调色测试网页")
     args = parser.parse_args()
     store = Store(args.data_dir)
     try:
@@ -518,7 +528,7 @@ def main():
     except OSError:
         print(f"端口 {args.port} 不可用。请尝试 python app.py --port 8766")
         return 1
-    url = f"http://127.0.0.1:{server.server_port}"
+    url = f"http://127.0.0.1:{server.server_port}" + ("/try" if args.open_try else "")
     print(f"GirlPhoto 已启动：{url}\n数据保存到：{store.root}\n关闭此窗口或按 Ctrl+C 停止。", flush=True)
     if not args.no_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()

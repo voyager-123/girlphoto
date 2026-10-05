@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GirlPhoto · 试试调色</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/try.css"></head>
+<body>
+<header><div class="brand"><span class="brand-icon">g.</span><div><strong>GirlPhoto</strong><span class="subtitle">照片调色实验室</span></div></div><div class="header-actions"><span class="local-badge">● 在你的电脑上处理</span><a class="button" href="/">照片标注</a></div></header>
+<main>
+  <section class="intro"><div><p class="eyebrow">TRY YOUR PHOTO</p><h1>一张照片，试出不同的色彩。</h1><p>上传原图，选择风格与强度，查看调色结果和参数。</p></div><span class="try-pill">模型测试 · CPU</span></section>
+  <div class="try-layout">
+    <aside class="try-controls">
+      <section class="try-card"><h2><span class="step">1</span> 选择照片</h2><button class="upload-zone" id="choosePhoto"><span class="upload-icon">＋</span><b>选择一张原图</b><span>JPEG / PNG / WebP</span><small>最大 25 MB · 1600 万像素</small></button><input type="file" id="tryFile" accept="image/jpeg,image/png,image/webp" hidden><p id="fileInfo" class="hint">图片仅用于本次测试，不会加入标注库或训练集。</p></section>
+      <section class="try-card"><div class="section-heading"><h2><span class="step">2</span> 设置调色</h2><button id="refreshModels" class="quiet">刷新模型</button></div><label class="field">测试模型<select id="tryModel" disabled><option>正在读取模型…</option></select></label><p id="trainingInfo" class="hint"></p><div id="modelNotice" class="model-notice" role="status">正在检查本机模型。</div><label class="field">目标风格<select id="tryStyle" disabled></select></label><label class="field" for="tryStrength"><span class="strength-label">调色强度 <output id="strengthValue">65%</output></span></label><input id="tryStrength" type="range" min="0" max="100" step="5" value="65"><div class="range-ends"><span>保持原图</span><span>更强</span></div><p class="hint">强度控制调整幅度，数值更高不一定更好看。</p><button class="primary generate" id="generate" disabled>生成调色结果</button></section>
+      <p class="hint local-note">本页用来观察模型表现。是否好看由你判断，模型自己的评分不能替代真实评价。</p>
+    </aside>
+    <section class="try-stage" aria-label="调色结果">
+      <div class="try-status" id="tryStatus" role="status" aria-live="polite">先选择一张照片。</div>
+      <div class="preview-grid">
+        <figure><figcaption><b>原图</b><span>颜色与方向统一后的预览</span></figcaption><div class="try-viewer"><div id="beforeEmpty" class="preview-empty"><span>01</span><p>你的原图会出现在这里</p></div><img id="beforePhoto" alt="原图预览" hidden></div></figure>
+        <figure><figcaption><b>调色结果</b><span id="resultTag">等待生成</span></figcaption><div class="try-viewer"><div id="afterEmpty" class="preview-empty"><span>02</span><p>看看模型会怎样处理</p></div><img id="afterPhoto" alt="调色结果预览" hidden></div></figure>
+      </div>
+      <div class="result-toolbar"><p class="hint" id="resultInfo">生成前后可以直接比较肤色、曝光和颜色是否协调。</p><div class="row"><button id="zoomResult" disabled>放大对比</button><a id="downloadImage" class="button" hidden download="girlphoto-preview.png">下载预览图</a><a id="downloadParams" class="button" hidden download="girlphoto-parameters.json">下载参数</a></div></div>
+      <section class="try-card parameters"><div class="section-heading"><h2>这次调整了什么</h2><span id="parameterBadge" class="hint">生成后显示</span></div><p id="parameterHint">这里会显示模型预测的六个调色参数。</p><div id="parameterGrid" class="parameter-grid"></div><p class="hint">参数适用于 GirlPhoto 调色引擎，不直接对应其他修图软件的滑块数值。下载图片是最长边 1600 像素的测试预览。</p></section>
+    </section>
+  </div>
+</main>
+<dialog id="compareDialog"><div class="dialog-bar"><span>原图 / 调色结果</span><button id="closeCompare">关闭 Esc</button></div><div class="preview-grid"><figure><figcaption>原图</figcaption><img id="largeBefore" alt="放大原图"></figure><figure><figcaption>调色结果</figcaption><img id="largeAfter" alt="放大调色结果"></figure></div></dialog>
+<footer>GirlPhoto · 本地模型测试 <span>从观察效果，到改进模型</span></footer>
+<script src="/try.js"></script>
+</body></html>

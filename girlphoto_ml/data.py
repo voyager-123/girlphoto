@@ -8,7 +8,7 @@ from PIL import Image, ImageCms, ImageOps
 import torch
 
 
-def read_image(path, size=None):
+def read_image(path, size=None, max_side=None):
     with Image.open(path) as opened:
         icc = opened.info.get("icc_profile")
         image = ImageOps.exif_transpose(opened).convert("RGB")
@@ -20,6 +20,8 @@ def read_image(path, size=None):
                 raise ValueError(f"Cannot convert embedded color profile: {path}") from exc
         if size:
             image = image.resize((size, size), Image.Resampling.BILINEAR)
+        elif max_side:
+            image.thumbnail((max_side, max_side), Image.Resampling.LANCZOS)
         return torch.from_numpy(np.array(image, dtype=np.float32).transpose(2, 0, 1) / 255.0)
 
 
